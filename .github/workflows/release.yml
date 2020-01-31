@@ -24,24 +24,3 @@ jobs:
 
     - name: Build
       run: sh ./build.sh
-
-    - name: Docker Tag
-      uses: actions/action-builder/docker@master
-      with:
-        entrypoint: make
-        args: docker-tag
-    - name: Docker Login
-      uses: actions/docker/login@master
-      env:
-        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-    - name: Build
-      uses: actions/action-builder/docker@master
-      with:
-        entrypoint: make
-        args: build
-    - name: Docker Publish
-      uses: actions/action-builder/docker@master
-      with:
-        entrypoint: make
-        args: publish
