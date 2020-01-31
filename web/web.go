@@ -37,18 +37,6 @@ func athletesHandler(w http.ResponseWriter, r *http.Request) {
 	athletes := db.ReadAthletes(name, year, country)
 	data := encode(athletes)
 
-	a := encode(athletes[0])
-	// println(athletes[0].Id)
-
-	// println(len(athletes[0].Id))
-
-	// println(data)
-
-	var ath db.Athlete
-	err := json.Unmarshal(a, &ath)
-	_ = err
-
-	// println(ath.Id)
 
 	w.Write(data)
 }
