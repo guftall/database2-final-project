@@ -21,6 +21,7 @@ type Athlete struct {
 	Name   string
 	Image  sql.NullString
 	Gender int8
+	Sport  string
 }
 
 type AthleteApiModel struct {
@@ -28,6 +29,7 @@ type AthleteApiModel struct {
 	Name   string         `json:"name"`
 	Image  sql.NullString `json:"image"`
 	Gender int8           `json:"gender"`
+	Sport  string         `json:"experienced"`
 }
 
 func connect() *sql.DB {
@@ -100,7 +102,7 @@ func ReadAthletes(name, year, country string) []*AthleteApiModel {
 	for rows.Next() {
 
 		var o Athlete
-		if err := rows.Scan(&o.Id, &o.Name, &o.Image, &o.Gender); err != nil {
+		if err := rows.Scan(&o.Id, &o.Name, &o.Image, &o.Gender, &o.Sport); err != nil {
 			log.Fatal(err)
 		}
 		log.Printf("id00: %v", o.Id)
@@ -110,9 +112,25 @@ func ReadAthletes(name, year, country string) []*AthleteApiModel {
 		athletes = append(athletes, mapAthlete(&o))
 	}
 
+	athletesMap := make(map[string]*AthleteApiModel)
+
+	for _, a := range athletes {
+		_, prs := athletesMap[a.Id]
+		if prs {
+			continue
+		}
+
+		athletesMap[a.Id] = a
+	}
+
 	log.Printf("read %d athlete\n", len(athletes))
 
-	return athletes
+	result := make([]*AthleteApiModel, 0)
+	for _, val := range athletesMap {
+		result = append(result, val)
+	}
+
+	return result
 }
 
 func ReadAthlete(id string) *AthleteApiModel {
@@ -146,6 +164,7 @@ func mapAthlete(athlete *Athlete) *AthleteApiModel {
 		Name:   athlete.Name,
 		Image:  athlete.Image,
 		Gender: athlete.Gender,
+		Sport:  athlete.Sport,
 	}
 }
 
