@@ -1,0 +1,29 @@
+version: '3.1'
+services:
+  web:
+    image: docker.pkg.github.com/guftall/database2-final-project/backend:latest
+    environment:
+      - DATABASE_PORT=80
+      - DB_CONNECTION=sqlserver://SA:STRONGPASSWORD@dbmssql?database=olympic
+    expose:
+      - "80"
+    restart: always
+    networks:
+      - webnet
+      - dbnet
+
+  dbmssql:
+    image: mcr.microsoft.com/mssql/server:2019-GA-ubuntu-16.04
+    container_name: dbmssql
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=STRONGPASSWORD
+    ports:
+      - "1433:1433"
+    networks:
+      - dbnet
+
+
+networks:
+  webnet:
+  dbnet:
