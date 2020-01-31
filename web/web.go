@@ -10,7 +10,7 @@ import (
 	"encoding/json"
 )
 
-var ServerUrl  = "localhost:8000"
+var ServerUrl  = "0.0.0.0:8000"
 
 func Start() {
 	log.Printf("Starting server(%s)\n", ServerUrl)
