@@ -6,14 +6,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-    - name: Set up Go 1.13
+    - name: Install Go
       uses: actions/setup-go@v1
       with:
         go-version: 1.13
-      id: go
 
     - name: Check out code into the Go module directory
-      uses: actions/checkout@v1
+      uses: actions/checkout@v2
     
     - name: Get dependencies
       run: |
@@ -22,9 +21,10 @@ jobs:
             curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
             dep ensure
         fi
+
     - name: Build
       run: sh ./build.sh
-      
+
     - name: Docker Tag
       uses: actions/action-builder/docker@master
       with:
