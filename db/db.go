@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	msdb "github.com/denisenkom/go-mssqldb"
+	"os"
 
 	"log"
 )
@@ -30,7 +31,10 @@ type AthleteApiModel struct {
 }
 
 func connect() *sql.DB {
-	connStr := "sqlserver://SA:Rr12345678@192.168.1.9?database=UNI_Database2"
+	connStr, ok := os.LookupEnv("DB_CONNECTION")
+	if !ok {
+		connStr = "sqlserver://SA:Rr12345678@192.168.1.9?database=UNI_Database2"
+	}
 
 	db, err := sql.Open("sqlserver", connStr)
 	if err != nil {
@@ -70,19 +74,20 @@ func ReadAthletes(name, year, country string) []*AthleteApiModel {
 
 	db := connect()
 
-	query := "select athlete_id, athlete_name, athlete_image, athlete_gender from En_Athlete"
-	query += " where athlete_name like '%" + name + "%'" 
+	query := "select athlete_id, athlete_name, athlete_image, athlete_gender, sport from En_Athlete"
+	query += " join Experienced_Athlete_Sport on (En_Athlete.athlete_id = Experienced_Athlete_Sport.athlete_id)"
+	query += " where athlete_name like '%" + name + "%'"
 
 	if year != "" {
 		query += " and " + year + " = (select olympic_year from En_Olympic" +
-				" where olympic_name = (select has_a_olympic from En_Tournament" +
-				" where tournament_id = (select tournament_id from Attended_Athlete_Tournament" +
-				" where Attended_Athlete_Tournament.athlete_id = En_Athlete.athlete_id)))"
+			" where olympic_name = (select has_a_olympic from En_Tournament" +
+			" where tournament_id = (select tournament_id from Attended_Athlete_Tournament" +
+			" where Attended_Athlete_Tournament.athlete_id = En_Athlete.athlete_id)))"
 	}
 
 	if country != "" {
 		query += " and '" + country + "' = (select from_country from En_Team" +
-				" where team_id = En_Athlete.athlete_team_id)"
+			" where team_id = En_Athlete.athlete_team_id)"
 	}
 
 	rows, err := db.Query(query)
@@ -136,10 +141,10 @@ func ReadAthlete(id string) *AthleteApiModel {
 }
 
 func mapAthlete(athlete *Athlete) *AthleteApiModel {
-	return &AthleteApiModel {
-		Id: athlete.Id.String(),
-		Name: athlete.Name,
-		Image: athlete.Image,
+	return &AthleteApiModel{
+		Id:     athlete.Id.String(),
+		Name:   athlete.Name,
+		Image:  athlete.Image,
 		Gender: athlete.Gender,
 	}
 }
