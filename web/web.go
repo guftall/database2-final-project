@@ -10,14 +10,12 @@ import (
 	"encoding/json"
 )
 
-var ServerUrl  = "0.0.0.0:8000"
-
-func Start() {
-	log.Printf("Starting server(%s)\n", ServerUrl)
+func Start(listeningUrl string) {
+	log.Printf("Starting server(%s)\n", listeningUrl)
 	http.HandleFunc("/olympics", olympicsHandler)
 	http.HandleFunc("/athletes", athletesHandler)
 	http.HandleFunc("/athlete", athletesHandlerDelete)
-	log.Fatal(http.ListenAndServe(ServerUrl, nil))
+	log.Fatal(http.ListenAndServe(listeningUrl, nil))
 }
 
 
