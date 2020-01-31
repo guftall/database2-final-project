@@ -74,7 +74,7 @@ func ReadAthletes(name, year, country string) []*AthleteApiModel {
 
 	db := connect()
 
-	query := "select athlete_id, athlete_name, athlete_image, athlete_gender, sport from En_Athlete"
+	query := "select En_Athlete.athlete_id, athlete_name, athlete_image, athlete_gender, sport from En_Athlete"
 	query += " join Experienced_Athlete_Sport on (En_Athlete.athlete_id = Experienced_Athlete_Sport.athlete_id)"
 	query += " where athlete_name like '%" + name + "%'"
 
