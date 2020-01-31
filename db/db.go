@@ -4,9 +4,10 @@ import (
 	"database/sql"
 	"encoding/json"
 	msdb "github.com/denisenkom/go-mssqldb"
-	"os"
-
 	"log"
+	"os"
+	"strconv"
+	"time"
 )
 
 type Olympic struct {
@@ -17,19 +18,23 @@ type Olympic struct {
 }
 
 type Athlete struct {
-	Id     msdb.UniqueIdentifier
-	Name   string
-	Image  sql.NullString
-	Gender int8
-	Sport  string
+	Id          msdb.UniqueIdentifier
+	Name        string
+	Image       sql.NullString
+	Gender      int8
+	Sport       string
+	BirthDate   time.Time
+	Nationality string
 }
 
 type AthleteApiModel struct {
-	Id     string         `json:"id"`
-	Name   string         `json:"name"`
-	Image  sql.NullString `json:"image"`
-	Gender int8           `json:"gender"`
-	Sport  string         `json:"experienced"`
+	Id          string         `json:"id"`
+	Name        string         `json:"name"`
+	Image       sql.NullString `json:"image"`
+	Gender      string         `json:"gender"`
+	Sport       string         `json:"experienced"`
+	Age         string         `json:"age"`
+	Nationality string         `json:"nationality"`
 }
 
 func connect() *sql.DB {
@@ -72,12 +77,16 @@ func ReadOlympics() []Olympic {
 	return olympics
 }
 
+const JoinAthleteTeam = " join En_Team on (En_Athlete.athlete_team_id = En_Team.team_id)"
+const JoinAthleteSport = " join Experienced_Athlete_Sport on (En_Athlete.athlete_id = Experienced_Athlete_Sport.athlete_id)"
+
 func ReadAthletes(name, year, country string) []*AthleteApiModel {
 
 	db := connect()
 
-	query := "select En_Athlete.athlete_id, athlete_name, athlete_image, athlete_gender, sport from En_Athlete"
-	query += " join Experienced_Athlete_Sport on (En_Athlete.athlete_id = Experienced_Athlete_Sport.athlete_id)"
+	query := "select En_Athlete.athlete_id, athlete_name, athlete_image, athlete_gender, sport, athlete_birthdate, En_Team.from_country from En_Athlete"
+	query += JoinAthleteTeam
+	query += JoinAthleteSport
 	query += " where athlete_name like '%" + name + "%'"
 
 	if year != "" {
@@ -101,19 +110,20 @@ func ReadAthletes(name, year, country string) []*AthleteApiModel {
 
 	for rows.Next() {
 
-		var o Athlete
-		if err := rows.Scan(&o.Id, &o.Name, &o.Image, &o.Gender, &o.Sport); err != nil {
+		athlete, err := scanAthleteRow(rows)
+		if err != nil {
 			log.Fatal(err)
 		}
-		log.Printf("id00: %v", o.Id)
 		// uidStr := o.Id.String()
 		// uid, _ := uuidLib.Parse(uidStr)
 		// log.Printf("id01: %s", uid)
-		athletes = append(athletes, mapAthlete(&o))
+		athletes = append(athletes, mapAthlete(athlete))
 	}
 
 	athletesMap := make(map[string]*AthleteApiModel)
 
+	// distinct athletes. because may be some athletes have multiple sports experienced
+	// so multiple athletes are in query result by different sports
 	for _, a := range athletes {
 		_, prs := athletesMap[a.Id]
 		if prs {
@@ -137,35 +147,61 @@ func ReadAthlete(id string) *AthleteApiModel {
 
 	db := connect()
 
-	query := "select athlete_id, athlete_name, athlete_image, athlete_gender from En_Athlete "
-	query += "where athlete_id='" + id + "'"
-	println(query)
+	query := "select En_Athlete.athlete_id, athlete_name, athlete_image, athlete_gender, sport, athlete_birthdate, En_Team.from_country from En_Athlete"
+	query += JoinAthleteTeam
+	query += JoinAthleteSport
+	query += " where En_Athlete.athlete_id='" + id + "'"
+
 	rows, err := db.Query(query)
 	if err != nil {
-		log.Fatalf("query failed: %s", err)
+		log.Fatalf("query(%s) failed: %s", query, err)
 	}
 
 	if rows.Next() {
 
-		var athlete Athlete
-		if err := rows.Scan(&athlete.Id, &athlete.Name, &athlete.Image, &athlete.Gender); err != nil {
+		athlete, err := scanAthleteRow(rows)
+		if err != nil {
 			log.Fatal(err)
 		}
 
-		return mapAthlete(&athlete)
+		return mapAthlete(athlete)
 	}
 
 	return nil
 }
 
-func mapAthlete(athlete *Athlete) *AthleteApiModel {
-	return &AthleteApiModel{
-		Id:     athlete.Id.String(),
-		Name:   athlete.Name,
-		Image:  athlete.Image,
-		Gender: athlete.Gender,
-		Sport:  athlete.Sport,
+func scanAthleteRow(rows *sql.Rows) (*Athlete, error) {
+	var athlete Athlete
+	err := rows.Scan(&athlete.Id,
+		&athlete.Name,
+		&athlete.Image,
+		&athlete.Gender,
+		&athlete.Sport,
+		&athlete.BirthDate,
+		&athlete.Nationality)
+	if err != nil {
+		return nil, err
 	}
+
+	return &athlete, nil
+}
+
+func mapAthlete(athlete *Athlete) *AthleteApiModel {
+	res := &AthleteApiModel{
+		Id:          athlete.Id.String(),
+		Name:        athlete.Name,
+		Image:       athlete.Image,
+		Gender:      "female",
+		Sport:       athlete.Sport,
+		Age:         strconv.Itoa(Age(athlete.BirthDate)),
+		Nationality: athlete.Nationality,
+	}
+	if athlete.Gender == 1 {
+		res.Gender = "female"
+	} else {
+		res.Gender = "male"
+	}
+	return res
 }
 
 func DeleteAthletes(id []byte) {

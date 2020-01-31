@@ -1,3 +1,5 @@
+github.com/bearbin/go-age v0.0.0-20140407072555-316d0c1e7cd1 h1:esuvcwPtL1Q9V3VddJ/t8V0Syw6HyRHgyMrLVsCl/IU=
+github.com/bearbin/go-age v0.0.0-20140407072555-316d0c1e7cd1/go.mod h1:74S2AyUVLNHXov5+dDdQZgOjQIzmmllrzfQcDz76F6k=
 github.com/denisenkom/go-mssqldb v0.0.0-20191128021309-1d7a30a10f73 h1:OGNva6WhsKst5OZf7eZOklDztV3hwtTHovdrLHV+MsA=
 github.com/denisenkom/go-mssqldb v0.0.0-20191128021309-1d7a30a10f73/go.mod h1:xbL0rPBG9cCiLr28tMa8zpbdarY27NDyej4t/EjAShU=
 github.com/gofrs/uuid v3.2.0+incompatible h1:y12jRkkFxsd7GpqdSZ+/KCs/fJbqpEXSGd4+jfEaewE=
