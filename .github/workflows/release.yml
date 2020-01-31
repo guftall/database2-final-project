@@ -16,7 +16,7 @@ jobs:
     
     - uses: mr-smithers-excellent/docker-build-push@v2
       with:
-        image: database2-final-project/backend
+        image: guftall/database2-final-project/backend
         tag: latest
         registry: docker.pkg.github.com
         dockerfile: Dockerfile
