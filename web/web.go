@@ -20,6 +20,7 @@ func Start(listeningUrl string) {
 
 
 func olympicsHandler(w http.ResponseWriter, r *http.Request) {
+	setupCORS(&w, r)
 	olympics := db.ReadOlympics()
 	data := encode(olympics)
 
@@ -28,7 +29,7 @@ func olympicsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func athletesHandler(w http.ResponseWriter, r *http.Request) {
-
+	setupCORS(&w, r)
 	name := r.URL.Query().Get("name")
 	year := r.URL.Query().Get("year")
 	country := r.URL.Query().Get("country")
@@ -53,7 +54,7 @@ func athletesHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func athletesHandlerDelete(w http.ResponseWriter, r *http.Request) {
-
+	setupCORS(&w, r)
 	if r.Method == "GET" {
 		id := r.URL.Query().Get("id")
 
@@ -102,4 +103,10 @@ func encode(i interface{}) []byte {
 	}
 
 	return jsonData
+}
+
+func setupCORS(w *http.ResponseWriter, req *http.Request) {
+    (*w).Header().Set("Access-Control-Allow-Origin", "*")
+    (*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+    (*w).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 }
